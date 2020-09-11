@@ -22,3 +22,11 @@ class Listing(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Watchlist(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=False, unique=True)
+    listings = models.ManyToManyField(Listing, blank=True, related_name='watchlists')
+
+    def __str__(self):
+        return f'Watchlist of {self.user.username}'
