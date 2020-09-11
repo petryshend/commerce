@@ -6,4 +6,4 @@ from auctions.models import Listing
 class ListingForm(ModelForm):
     class Meta:
         model = Listing
-        fields = ['title', 'description', 'starting_bid', 'image_url', 'category']
+        fields = '__all__'
