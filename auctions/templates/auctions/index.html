@@ -15,6 +15,7 @@
             <div class="col-sm-9">
                 <h3>{{ listing.title }}</h3>
                 <p>{{ listing.description }}</p>
+                <a href="{% url 'view_listing' listing.id %}">View</a>
             </div>
         </div>
     {% endfor %}
