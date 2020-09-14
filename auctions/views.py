@@ -1,16 +1,17 @@
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
 
-from .models import User, Listing
+from .models import User, Listing, Watchlist
 from auctions.forms import ListingForm
 
 
 def index(request):
     return render(request, "auctions/index.html", {
-        'listings': Listing.objects.all()
+        'listings': Listing.objects.all().order_by('-id')
     })
 
 
@@ -78,7 +79,39 @@ def create_listing(request):
 
 
 def view_listing(request, listing_id):
-    listing = Listing.objects.get(pk=listing_id)
+    in_watchlist = False
+    if request.user.is_authenticated:
+        try:
+            watchlist = Watchlist.objects.get(user=request.user)
+            for listing in watchlist.listings.all():
+                if listing.id == listing_id:
+                    in_watchlist = True
+        except Watchlist.DoesNotExist:
+            pass
     return render(request, 'auctions/view_listing.html', {
-        'listing': listing
+        'listing': Listing.objects.get(pk=listing_id),
+        'in_watchlist': in_watchlist
     })
+
+
+@login_required
+def add_to_watchlist(request, listing_id):
+    if request.method != 'POST':
+        return redirect(reverse('view_listing', args=[listing_id]))
+    try:
+        watchlist = Watchlist.objects.get(user=request.user)
+    except Watchlist.DoesNotExist:
+        watchlist = Watchlist(user=request.user)
+        watchlist.save()
+    listing = Listing.objects.get(pk=listing_id)
+    watchlist.listings.add(listing)
+    return redirect(reverse('view_listing', args=[listing_id]))
+
+
+@login_required
+def remove_from_watchlist(request, listing_id):
+    if request.method != 'POST':
+        return redirect(reverse('view_listing', args=[listing_id]))
+    watchlist = Watchlist.objects.get(user=request.user)
+    watchlist.listings.remove(Listing.objects.get(pk=listing_id))
+    return redirect(reverse('view_listing', args=[listing_id]))
