@@ -1,11 +1,12 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from django.contrib import messages
 
-from .models import User, Listing, Watchlist
+from .models import User, Listing, Watchlist, Bid
 from auctions.forms import ListingForm
 
 
@@ -79,18 +80,33 @@ def create_listing(request):
 
 
 def view_listing(request, listing_id):
+    listing = Listing.objects.get(pk=listing_id)
     in_watchlist = False
     if request.user.is_authenticated:
         try:
             watchlist = Watchlist.objects.get(user=request.user)
-            for listing in watchlist.listings.all():
-                if listing.id == listing_id:
+            for l in watchlist.listings.all():
+                if l.id == listing_id:
                     in_watchlist = True
         except Watchlist.DoesNotExist:
             pass
+
+    current_bids = Bid.objects.filter(listing=Listing.objects.get(pk=listing_id))
+    latest_bid = None
+    if current_bids:
+        latest_bid = current_bids.order_by('-amount')[0]
+
+    if latest_bid:
+        min_bid = latest_bid.amount + 1
+    else:
+        min_bid = listing.starting_bid + 1
+
     return render(request, 'auctions/view_listing.html', {
-        'listing': Listing.objects.get(pk=listing_id),
-        'in_watchlist': in_watchlist
+        'listing': listing,
+        'in_watchlist': in_watchlist,
+        'current_bids_count': len(current_bids),
+        'latest_bid': latest_bid,
+        'min_bid': min_bid
     })
 
 
@@ -114,4 +130,25 @@ def remove_from_watchlist(request, listing_id):
         return redirect(reverse('view_listing', args=[listing_id]))
     watchlist = Watchlist.objects.get(user=request.user)
     watchlist.listings.remove(Listing.objects.get(pk=listing_id))
+    return redirect(reverse('view_listing', args=[listing_id]))
+
+
+@login_required
+def place_bid(request, listing_id):
+    listing = Listing.objects.get(pk=listing_id)
+    if request.method != 'POST':
+        return redirect(reverse('view_listing', args=[listing_id]))
+    latest_bid = Bid.objects.filter(listing=Listing.objects.get(pk=listing_id)).order_by('-amount').first()
+    if latest_bid:
+        min_bid_amount = latest_bid.amount
+    else:
+        min_bid_amount = listing.starting_bid
+    current_bid = float(request.POST['bid'])
+    if min_bid_amount > current_bid:
+        messages.add_message(request, messages.ERROR, 'Your bid should be greater than latest bid')
+        return redirect(reverse('view_listing', args=[listing_id]))
+
+    new_bid = Bid(amount=current_bid, listing=listing, placed_by=request.user)
+    new_bid.save()
+    messages.add_message(request, messages.INFO, 'You successfully placed new bid')
     return redirect(reverse('view_listing', args=[listing_id]))

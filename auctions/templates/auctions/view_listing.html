@@ -2,12 +2,32 @@
 
 {% block body %}
 
+{% include "auctions/_partial/messages.html" %}
+
+<h1>{{ listing.id }}</h1>
 <h2>{{ listing.title }}</h2>
 {% if listing.image_url %}
 <img src="{{ listing.image_url }}" alt="{{ listing.title }}">
 {% endif %}
 <p>{{ listing.description }}</p>
-<h3>${{ listing.starting_bid }}</h3>
+
+{% if latest_bid %}
+    <p>
+        Current highest bid is ${{latest_bid.amount}} by <i>{{latest_bid.placed_by.username}}</i>
+        ({{ current_bids_count }} total bids)
+    </p>
+{% else %}
+    <p>Starting bid is ${{ listing.starting_bid }}</p>
+{% endif %}
+
+{% if user.is_authenticated %}
+    <form action="{% url 'place_bid' listing.id %}" method="post">
+        {% csrf_token %}
+        <input name="bid" type="number" min="{{ min_bid }}" value="{{ min_bid }}" required>
+        <input class="btn btn-primary" type="submit" value="Place bid">
+    </form>
+{% endif %}
+
 {% if user.is_authenticated %}
     {% if in_watchlist %}
         <form action="{% url 'remove_from_watchlist' listing.id %}" method="post">

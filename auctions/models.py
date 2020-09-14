@@ -30,3 +30,12 @@ class Watchlist(models.Model):
 
     def __str__(self):
         return f'Watchlist of {self.user.username}'
+
+
+class Bid(models.Model):
+    amount = models.DecimalField(max_digits=15, decimal_places=2)
+    listing = models.ForeignKey(Listing, on_delete=models.CASCADE, blank=False, related_name='bids')
+    placed_by = models.ForeignKey(User, on_delete=models.CASCADE, blank=False, related_name='bids')
+
+    def __str__(self):
+        return f'${self.amount} bid on {self.listing.title} by {self.placed_by.username}'
