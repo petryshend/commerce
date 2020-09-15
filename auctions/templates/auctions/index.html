@@ -1,22 +1,9 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-    <h2>Active Listings</h2>
+<h2>Active Listings</h2>
 
-    {% for listing in listings %}
-        <div class="row">
-            <div class="col-sm-3">
-                {% if listing.image_url %}
-                    <img class="mx-auto d-block" src="{{ listing.image_url }}" alt="{{ listing.title }}">
-                {% else %}
-                    <img class="mx-auto d-block" src="https://www.allianceplast.com/wp-content/uploads/2017/11/no-image.png" alt="No image">
-                {% endif %}
-            </div>
-            <div class="col-sm-9">
-                <h3>{{ listing.title }}</h3>
-                <p>{{ listing.description }}</p>
-                <a href="{% url 'view_listing' listing.id %}">View</a>
-            </div>
-        </div>
-    {% endfor %}
+{% for listing in listings %}
+    {% include 'auctions/_partial/listing_card.html' with listing=listing %}
+{% endfor %}
 {% endblock %}

@@ -1,0 +1,20 @@
+<div class="row no-gutters border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+    <div class="col col-md-8 p-4 d-flex flex-column position-static">
+        {% if listing.category %}
+            <strong class="d-inline-block mb-2 text-primary">{{ listing.category.name }}</strong>
+        {% else %}
+            <small class="text-muted">No catogry</small>
+        {% endif %}
+        <h3 class="mb-0">{{ listing.title }}</h3>
+        <p class="card-text mb-auto">{{ listing.description }}</p>
+
+        <a href="{% url 'view_listing' listing.id %}" class="stretched-link">View listing...</a>
+    </div>
+    <div class="col-auto col-md-4 d-none d-lg-block">
+        {% if listing.image_url %}
+            <img class="mx-auto d-block" src="{{ listing.image_url }}" alt="{{ listing.title }}">
+        {% else %}
+            <img class="mx-auto d-block" src="https://www.allianceplast.com/wp-content/uploads/2017/11/no-image.png" alt="No image">
+        {% endif %}
+    </div>
+</div>

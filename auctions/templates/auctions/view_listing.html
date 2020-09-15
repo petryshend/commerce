@@ -10,11 +10,7 @@
     </div>
 {% endif %}
 
-<h2>{{ listing.title }}</h2>
-{% if listing.image_url %}
-<img src="{{ listing.image_url }}" alt="{{ listing.title }}">
-{% endif %}
-<p>{{ listing.description }}</p>
+{% include 'auctions/_partial/listing_card.html' with listing=listing %}
 
 {% if not listing.is_closed %}
     {% if latest_bid %}
