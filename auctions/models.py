@@ -41,3 +41,13 @@ class Bid(models.Model):
 
     def __str__(self):
         return f'${self.amount} bid on {self.listing.title} by {self.placed_by.username}'
+
+
+class Comment(models.Model):
+    content = models.TextField(blank=False)
+    placed_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
+    placed_at = models.DateTimeField(auto_now=True)
+    listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name='comments')
+
+    def __str__(self):
+        return f'{self.content[:15]}...'

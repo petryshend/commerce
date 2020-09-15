@@ -53,5 +53,23 @@
     <p>Closed by <i>{{listing.created_by.username}}</i> for ${{latest_bid.amount}}</p>
 {% endif %}
 
+<h4>Comments:</h4>
+{% for comment in comments %}
+    <hr>
+    <div>
+        <i>{{ comment.placed_by.username }}</i> at {{ comment.placed_at }} wrote:
+        <p>{{ comment.content }}</p>
+    </div>
+{% empty %}
+    No comments yet
+{% endfor %}
+
+{% if user.is_authenticated %}
+    <form action="{% url 'add_comment' listing.id %}" method="post">
+        {% csrf_token %}
+        {% include 'auctions/_partial/form_fields.html' with form=comment_form %}
+        <button type="submit" class="btn btn-primary">Add comment</button>
+    </form>
+{% endif %}
 
 {% endblock %}

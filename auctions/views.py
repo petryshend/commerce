@@ -6,8 +6,8 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib import messages
 
-from .models import User, Listing, Watchlist, Bid
-from auctions.forms import ListingForm
+from .models import User, Listing, Watchlist, Bid, Comment
+from auctions.forms import ListingForm, CommentForm
 
 
 def index(request):
@@ -109,7 +109,9 @@ def view_listing(request, listing_id):
         'in_watchlist': in_watchlist,
         'current_bids_count': len(current_bids),
         'latest_bid': latest_bid,
-        'min_bid': min_bid
+        'min_bid': min_bid,
+        'comments': Comment.objects.filter(listing=listing).order_by('-placed_at'),
+        'comment_form': CommentForm()
     })
 
 
@@ -165,4 +167,17 @@ def close_listing(request, listing_id):
     listing.is_closed = True
     listing.save()
     messages.add_message(request, messages.INFO, 'You closed this listing')
+    return redirect(reverse('view_listing', args=[listing_id]))
+
+
+@login_required
+def add_comment(request, listing_id):
+    if request.method != 'POST':
+        return redirect(reverse('view_listing', args=[listing_id]))
+    listing = Listing.objects.get(pk=listing_id)
+    form = CommentForm(request.POST)
+    comment = form.save(commit=False)
+    comment.placed_by = request.user
+    comment.listing = listing
+    comment.save()
     return redirect(reverse('view_listing', args=[listing_id]))
