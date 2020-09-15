@@ -6,4 +6,4 @@ from auctions.models import Listing
 class ListingForm(ModelForm):
     class Meta:
         model = Listing
-        fields = '__all__'
+        exclude = ['created_by', 'is_closed']

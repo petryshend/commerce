@@ -68,10 +68,13 @@ def register(request):
         return render(request, "auctions/register.html")
 
 
+@login_required
 def create_listing(request):
     if request.method == 'POST':
         form = ListingForm(request.POST)
-        form.save()
+        listing = form.save(commit=False)
+        listing.created_by = request.user
+        listing.save()
         return redirect(reverse('index'))
     form = ListingForm()
     return render(request, 'auctions/create_listing.html', {
@@ -151,4 +154,15 @@ def place_bid(request, listing_id):
     new_bid = Bid(amount=current_bid, listing=listing, placed_by=request.user)
     new_bid.save()
     messages.add_message(request, messages.INFO, 'You successfully placed new bid')
+    return redirect(reverse('view_listing', args=[listing_id]))
+
+
+@login_required
+def close_listing(request, listing_id):
+    if request.method != 'POST':
+        return redirect(reverse('view_listing', args=[listing_id]))
+    listing = Listing.objects.get(pk=listing_id)
+    listing.is_closed = True
+    listing.save()
+    messages.add_message(request, messages.INFO, 'You closed this listing')
     return redirect(reverse('view_listing', args=[listing_id]))
