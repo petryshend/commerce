@@ -181,3 +181,15 @@ def add_comment(request, listing_id):
     comment.listing = listing
     comment.save()
     return redirect(reverse('view_listing', args=[listing_id]))
+
+
+@login_required
+def view_watchlist(request):
+    try:
+        watchlist = Watchlist.objects.get(user=request.user)
+        listings = watchlist.listings.filter(is_closed=False)
+    except Watchlist.DoesNotExist:
+        listings = []
+    return render(request, "auctions/index.html", {
+        'listings': listings
+    })

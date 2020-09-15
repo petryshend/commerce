@@ -5,5 +5,7 @@
 
 {% for listing in listings %}
     {% include 'auctions/_partial/listing_card.html' with listing=listing %}
+{% empty %}
+    No listings here
 {% endfor %}
 {% endblock %}
