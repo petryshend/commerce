@@ -8,7 +8,9 @@
         <h3 class="mb-0">{{ listing.title }}</h3>
         <p class="card-text mb-auto">{{ listing.description }}</p>
 
-        <a href="{% url 'view_listing' listing.id %}" class="stretched-link">View listing...</a>
+        {% if request.resolver_match.url_name != 'view_listing' %}
+            <a href="{% url 'view_listing' listing.id %}" class="stretched-link">View listing...</a>
+        {% endif %}
     </div>
     <div class="col-auto col-md-4 d-none d-lg-block">
         {% if listing.image_url %}
