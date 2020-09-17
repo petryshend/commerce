@@ -6,13 +6,21 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib import messages
 
-from .models import User, Listing, Watchlist, Bid, Comment
+from .models import User, Listing, Watchlist, Bid, Comment, Category
 from auctions.forms import ListingForm, CommentForm
 
 
 def index(request):
+    category_id = request.GET.get('category')
+    if category_id:
+        category = Category.objects.get(pk=int(category_id))
+        listings = Listing.objects.filter(category=category).order_by('-id')
+    else:
+        category = None
+        listings = Listing.objects.all().order_by('-id')
     return render(request, "auctions/index.html", {
-        'listings': Listing.objects.all().order_by('-id')
+        'listings': listings,
+        'category': category
     })
 
 
@@ -192,4 +200,10 @@ def view_watchlist(request):
         listings = []
     return render(request, "auctions/index.html", {
         'listings': listings
+    })
+
+
+def view_categories(request):
+    return render(request, 'auctions/categories.html', {
+        'categories': Category.objects.all()
     })
